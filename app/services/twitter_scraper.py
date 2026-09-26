@@ -13,9 +13,6 @@
     # texto, 
     # métricas (likes e retweets - ainda não temos nenhuma funcionalidade para elas, estamos armazenando por desencargo de consciência, mas as métricas estão sujeitas a futura remoção dependendo de como for.)
     # post citado (se presente no post - caso em que um candidato faz um post referenciando outro post, dele mesmo ou de outra pessoa). 
-# Devido algumas complicações, o projeto esteve um pouco parado,
-    # mas a ideia é que ao longo da semana já tenhamos os dados de 3 candidatos a presidência,
-    # 2 candidatos a governador, ao longo do período de agosto à setembro e automação para requsições diárias para atualizar automaticamente os dados.
 
 import json
 
