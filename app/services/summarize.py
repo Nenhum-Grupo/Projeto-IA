@@ -1,3 +1,14 @@
+#       INFORMAÇÕES RELEVANTES:
+    # O agentes: Analista, Rankeador e Resumidor foram migrados para um formato de GEMS do Gemini,
+    # os quais os links seguem:
+    # Analista: https://gemini.google.com/gem/1Gy8zPPzevlpNgibDBglqObtoss1IkKyn?usp=sharing
+    # Rankeador: https://gemini.google.com/gem/1G0cThvcJfN05eF7aFYRx3H3ZMU4qEXnF?usp=sharing
+    # Resumidor: https://gemini.google.com/gem/1eHrmjFmNLcQwcKb7J-LGbjoontNOiPAP?usp=sharing
+    # Mas eles NÃO são usados via código por aqui, e apenas deixamos os prompts para possível análise se for de interesse.
+
+
+
+
 from app.utils.pdf_handler import PDFManager
 from app.core.config import settings
 
@@ -296,139 +307,6 @@ class gemini_handler():
         """
 }
 
-    def __resumo_inicial(self, bucketName, bucketKey):
-        print("Iniciando processamento do PDF")
-        texto_extraido = PDFManager(bucketName, bucketKey)
-        agente = self.agentes["analista"]
-
-        contents = [
-            types.Content(
-                role="user",
-                parts=[types.Part.from_text(text=f"{agente}\n\n{texto_extraido}")]
-            )
-        ]
-
-        # configuração para o agente do analista
-            # thinking_level: "HIGH" para garantir uma análise mais profunda e detalhada do plano de governo.
-            # temperature: 0.1 para reduzir a aleatoriedade e garantir respostas mais focadas e consistentes, o que é importante para uma análise técnica de política.
-        config = types.GenerateContentConfig(
-            temperature=0.1,
-            # thinking_config=types.ThinkingConfig(
-            #     thinking_level="HIGH",
-            # ),
-        )
-
-        for tentativa in range(3):
-            try:
-                print("Iniciando processamento da primeira requisição")
-                response = self.client.models.generate_content(
-                    model=self.MODEL_ID,
-                    contents=contents,
-                    config=config,
-                )
-
-                return response.text
-            except errors.ServerError as e:
-                if tentativa < 2:
-                    metodo_atual = inspect.currentframe().f_code.co_name
-                    print(f"Erro de servidor em: {metodo_atual}. Esperando 5 minutos.")
-
-                    sleep(300)
-                    continue
-                raise e
-
-
-    def __ranking(self, bucketName, bucketKey):
-        texto_extraido = self.__resumo_inicial(bucketName, bucketKey)
-        sleep(60)
-        agente = self.agentes["rankeador"]
-
-        contents = [
-            types.Content(
-                role="user",
-                parts=[types.Part.from_text(text=f"{agente}\n\n{texto_extraido}")]
-            )
-        ]
-
-        # configuração para o agente rankeador
-            # thinking_level: "LOW" para que o ranking fique mais consistente.
-            # temperature: 0.1 pois não estamos "criando" nada, apenas modificando algo que já existe
-        config = types.GenerateContentConfig(
-            temperature=0.1,
-            # thinking_config=types.ThinkingConfig(
-            #     thinking_level="LOW",
-            # ),
-        )
-
-        for tentativa in range(3):
-            try:
-                print("Iniciando processamento da segunda requisição")
-                response = self.client.models.generate_content(
-                    model=self.MODEL_ID,
-                    contents=contents,
-                    config=config,
-                )
-
-                return response.text
-            except errors.ServerError as e:
-                if tentativa < 2:
-                    metodo_atual = inspect.currentframe().f_code.co_name
-                    print(f"Erro de servidor em: {metodo_atual}. Esperando 5 minutos.")
-
-                    sleep(300)
-                    continue
-                raise e
-
-
-    def Resumo_plano(self, bucketName, bucketKey):
-        texto_extraido = self.__ranking(bucketName, bucketKey)
-        sleep(60)
-        agente = self.agentes["resumidor"]
-
-        contents = [
-            types.Content(
-                role="user",
-                parts=[types.Part.from_text(text=f"{agente}\n\n{texto_extraido}")]
-            )
-        ]
-
-        # configuração para o agente resumidor
-            # thinking_level: Nenhum, para diminuir gastos
-            # temperature: 0.2 criação de palavras-chave, mas ainda baixa para não inventar palavras que não tenham a ver com o tópico
-        config = types.GenerateContentConfig(
-            temperature=0.2,
-        )
-
-        for tentativa in range(3):
-            try:
-                print("Iniciando processamento da terceira requisição")
-                response = self.client.models.generate_content(
-                    model=self.MODEL_ID,
-                    contents=contents,
-                    config=config,
-                )
-
-                # Adicionando no S3
-                data = json.loads(response.text)
-                s3_client = boto3.client('s3')
-                s3_client.put_object(
-                    Bucket=bucketName,
-                    Key="Resumos/Bolsonaro.json",
-                    Body=json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8"),
-                    ContentType="application/json"
-                )
-
-                return response.text
-            except errors.ServerError as e:
-                if tentativa < 2:
-                    metodo_atual = inspect.currentframe().f_code.co_name
-                    print(f"Erro de servidor em: {metodo_atual}. Esperando 5 minutos.")
-
-                    sleep(300)
-                    continue
-                raise e
-
-
     def Resumo_Redes(self, intervalo, posts, bucketName=None, bucketKey=None):
         if bucketName is None or bucketKey is None:
             print("Entrando no Resumo_Redes...")
@@ -468,7 +346,3 @@ class gemini_handler():
                     raise e
         else:
             pass
-
-if __name__ == "__main__":
-    GH = gemini_handler()
-    GH.Resumo_plano("eleicoesystem-bucket","Eleicoes/2022/Presidente/PlanoGoverno_Jair_Bolsonaro.pdf")
