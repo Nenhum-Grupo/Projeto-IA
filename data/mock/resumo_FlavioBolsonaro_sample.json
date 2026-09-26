@@ -1,0 +1,22 @@
+{
+    "intervalo": "semana do dia 1 a 7 de agosto",
+    "resumo": "Durante a semana, o candidato concentrou seu discurso em uma forte oposição ao governo atual, classificando a gestão como um projeto de retrocesso e caos. Suas publicações destacaram críticas severas à política externa, especialmente o rompimento diplomático com a Argentina, e denunciaram supostos escândalos de corrupção envolvendo o governo. Além disso, o candidato apresentou propostas de campanha focadas em reformas econômicas, segurança pública e combate ao crime organizado, reforçando a formação de sua chapa presidencial e alianças políticas regionais como parte de um projeto de 'resgate do Brasil'.",
+    "topicos": [
+        {
+            "categoria": "SISTEMA_POLITICO",
+            "porcentagem": 40
+        },
+        {
+            "categoria": "ECONOMIA",
+            "porcentagem": 25
+        },
+        {
+            "categoria": "RELACOES_INTERNACIONAIS",
+            "porcentagem": 20
+        },
+        {
+            "categoria": "BEM_ESTAR_QUALIDADE_DE_VIDA",
+            "porcentagem": 15
+        }
+    ]
+}
